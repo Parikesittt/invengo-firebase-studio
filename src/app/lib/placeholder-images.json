@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "inventory-box",
+      "description": "Inventory storage boxes in a warehouse",
+      "imageUrl": "https://picsum.photos/seed/inv1/600/400",
+      "imageHint": "inventory storage"
+    },
+    {
+      "id": "retail-shelf",
+      "description": "Organized retail store shelves",
+      "imageUrl": "https://picsum.photos/seed/inv2/600/400",
+      "imageHint": "retail shelves"
+    },
+    {
+      "id": "office-supplies",
+      "description": "Stationery and office supplies",
+      "imageUrl": "https://picsum.photos/seed/inv3/600/400",
+      "imageHint": "office supplies"
+    }
+  ]
+}
