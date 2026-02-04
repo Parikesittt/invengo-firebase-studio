@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useInventory } from "@/lib/inventory-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Package, AlertTriangle, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, MoreHorizontal } from "lucide-react";
+import { Package, AlertTriangle, TrendingDown, DollarSign, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
@@ -137,7 +136,7 @@ export default function Dashboard() {
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-12" asChild>
               <Link href="/analysis">
-                <TrendingUp className="h-4 w-4 text-primary-foreground" />
+                <TrendingDown className="h-4 w-4 text-primary-foreground" />
                 Prediksi AI
               </Link>
             </Button>
