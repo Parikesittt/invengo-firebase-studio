@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * FIREBASE SECURITY RULES DOCUMENTATION
+     * 
+     * Core Philosophy:
+     * This ruleset implements a shared-access model for an inventory management system (UMKM). 
+     * Since the application handles internal business data (products, stock levels, and alerts), 
+     * security is centered on ensuring only authenticated users can view or modify data.
+     *
+     * Data Structure:
+     * - /products/{productId}: The root collection for inventory items.
+     * - /products/{productId}/stockUpdates/{updateId}: Subcollection tracking historical changes.
+     * - /products/{productId}/lowStockAlerts/{alertId}: Subcollection for automated or manual stock alerts.
+     *
+     * Key Security Decisions:
+     * 1. Authenticated Access: All read and write operations require a valid Firebase Authentication token.
+     * 2. Implicit Shared Ownership: The current data model does not define individual product owners. 
+     *    Therefore, any authenticated user within the system can manage the inventory.
+     * 3. Relational Integrity: In prototyping mode, we strictly enforce that subcollection documents 
+     *    contain a `productId` field that matches their parent path to prevent orphaned data.
+     * 4. Denormalization for Authorization: Subcollections include the `productId` directly on the 
+     *    document. This allows for efficient querying and path-consistency checks without 
+     *    requiring costly `get()` calls to parent documents.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the request is made by an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if a document exists and is being targeted for update/delete. */
+    function isExisting() {
+      return resource != null;
+    }
+
+    /** @description Validates that the ID in the data matches the ID in the document path. */
+    function isPathConsistent(field, pathId) {
+      return request.resource.data[field] == pathId;
+    }
+
+    /** @description Ensures a critical relational field has not been changed during an update. */
+    function isImmutable(field) {
+      return request.resource.data[field] == resource.data[field];
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the Product inventory. Requires authentication for all operations.
+     * @path /products/{productId}
+     * @allow (create) if user is signed in and provides matching 'id' in data.
+     * @deny (delete) if user is not signed in.
+     * @principle Ensures path-to-data consistency and restricts access to authenticated personnel.
+     */
+    match /products/{productId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isPathConsistent('id', productId);
+      allow update: if isSignedIn() && isExisting() && isImmutable('id');
+      allow delete: if isSignedIn() && isExisting();
+
+      /**
+       * @description Rules for stock movement records. Links every update to its parent product.
+       * @path /products/{productId}/stockUpdates/{stockUpdateId}
+       * @allow (list) if user is signed in.
+       * @deny (create) if the 'productId' in the document doesn't match the URL path.
+       * @principle Enforces relational integrity between subcollections and parent products.
+       */
+      match /stockUpdates/{stockUpdateId} {
+        allow get, list: if isSignedIn();
+        allow create: if isSignedIn() && isPathConsistent('productId', productId);
+        allow update: if isSignedIn() && isExisting() && isImmutable('productId');
+        allow delete: if isSignedIn() && isExisting();
+      }
+
+      /**
+       * @description Rules for system-generated or manual low stock alerts.
+       * @path /products/{productId}/lowStockAlerts/{lowStockAlertId}
+       * @allow (update) if user is signed in to resolve an alert.
+       * @deny (create) if the user is unauthenticated.
+       * @principle Maintains data consistency for inventory monitoring.
+       */
+      match /lowStockAlerts/{lowStockAlertId} {
+        allow get, list: if isSignedIn();
+        allow create: if isSignedIn() && isPathConsistent('productId', productId);
+        allow update: if isSignedIn() && isExisting() && isImmutable('productId');
+        allow delete: if isSignedIn() && isExisting();
+      }
+    }
+
+    // Default deny for any unmatched paths
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
