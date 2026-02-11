@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Package, TrendingUp, Zap, Shield, ArrowRight, Sparkles } from "lucide-react";
@@ -7,7 +9,26 @@ import { useUser } from "@/firebase";
 import Image from "next/image";
 
 export default function LandingPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, isUserLoading, router]);
+
+  // Prevent flash of landing page content for logged in users
+  if (isUserLoading || user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-4">
+          <Package className="h-12 w-12 text-accent animate-pulse" />
+          <p className="text-muted-foreground animate-pulse">Menyiapkan InvenGo...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -20,20 +41,12 @@ export default function LandingPage() {
           <span className="text-xl font-bold tracking-tight text-foreground">InvenGo</span>
         </div>
         <div className="flex items-center gap-4">
-          {user ? (
-            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">Masuk</Link>
-              </Button>
-              <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link href="/login?tab=register">Daftar Sekarang</Link>
-              </Button>
-            </>
-          )}
+          <Button variant="ghost" asChild>
+            <Link href="/login">Masuk</Link>
+          </Button>
+          <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Link href="/login?tab=register">Daftar Sekarang</Link>
+          </Button>
         </div>
       </nav>
 
