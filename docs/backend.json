@@ -1,180 +1,64 @@
 {
   "entities": {
+    "Store": {
+      "title": "Store",
+      "type": "object",
+      "description": "Represents a store or warehouse owned by a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string", "description": "The UID of the user who owns this store." },
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "ownerId", "name"]
+    },
     "Product": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Product",
       "type": "object",
       "description": "Represents a product in the inventory.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the product."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the product."
-        },
-        "description": {
-          "type": "string",
-          "description": "Detailed description of the product."
-        },
-        "sku": {
-          "type": "string",
-          "description": "Stock Keeping Unit - a unique identifier for the product, which can be used to track inventory."
-        },
-        "initialStock": {
-          "type": "number",
-          "description": "Initial stock level of the product."
-        },
-        "reorderPoint": {
-          "type": "number",
-          "description": "The minimum stock level at which a reorder notification should be triggered."
-        }
+        "id": { "type": "string" },
+        "storeId": { "type": "string", "description": "Reference to the Store this product belongs to." },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "sku": { "type": "string" },
+        "initialStock": { "type": "number" },
+        "currentStock": { "type": "number" },
+        "reorderPoint": { "type": "number" },
+        "unitPrice": { "type": "number" },
+        "category": { "type": "string" }
       },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "initialStock"
-      ]
+      "required": ["id", "storeId", "name", "initialStock", "currentStock"]
     },
     "StockUpdate": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "StockUpdate",
       "type": "object",
-      "description": "Represents a stock update (increase or decrease) for a product.",
+      "description": "Represents a stock update for a product.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the stock update."
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N StockUpdate)"
-        },
-        "quantity": {
-          "type": "number",
-          "description": "Quantity of stock added or removed.  Positive values indicate stock in, negative values indicate stock out."
-        },
-        "updateDate": {
-          "type": "string",
-          "description": "Date and time the stock was updated.",
-          "format": "date-time"
-        },
-        "notes": {
-          "type": "string",
-          "description": "Optional notes related to the stock update (e.g., reason for update, supplier information)."
-        }
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "quantity": { "type": "number" },
+        "updateDate": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
       },
-      "required": [
-        "id",
-        "productId",
-        "quantity",
-        "updateDate"
-      ]
-    },
-    "LowStockAlert": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "LowStockAlert",
-      "type": "object",
-      "description": "Represents a low stock alert for a product.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the low stock alert."
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N LowStockAlert)"
-        },
-        "alertDate": {
-          "type": "string",
-          "description": "Date and time the low stock alert was triggered.",
-          "format": "date-time"
-        },
-        "stockLevel": {
-          "type": "number",
-          "description": "The current stock level when the alert was triggered."
-        },
-        "resolved": {
-          "type": "boolean",
-          "description": "Indicates whether the low stock alert has been resolved (e.g., stock replenished)."
-        }
-      },
-      "required": [
-        "id",
-        "productId",
-        "alertDate",
-        "stockLevel",
-        "resolved"
-      ]
+      "required": ["id", "productId", "quantity", "updateDate"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "google.com"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/products/{productId}",
-        "definition": {
-          "entityName": "Product",
-          "schema": {
-            "$ref": "#/backend/entities/Product"
-          },
-          "description": "Stores product information. Includes `id` for unique identification.",
-          "params": [
-            {
-              "name": "productId",
-              "description": "Unique identifier for the product."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/products/{productId}/stockUpdates/{stockUpdateId}",
-        "definition": {
-          "entityName": "StockUpdate",
-          "schema": {
-            "$ref": "#/backend/entities/StockUpdate"
-          },
-          "description": "Stores stock update information for a specific product. Includes `productId` (denormalized) to create an explicit link to the parent product.",
-          "params": [
-            {
-              "name": "productId",
-              "description": "Unique identifier for the product."
-            },
-            {
-              "name": "stockUpdateId",
-              "description": "Unique identifier for the stock update."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/products/{productId}/lowStockAlerts/{lowStockAlertId}",
-        "definition": {
-          "entityName": "LowStockAlert",
-          "schema": {
-            "$ref": "#/backend/entities/LowStockAlert"
-          },
-          "description": "Stores low stock alerts for a specific product. Includes `productId` (denormalized) to create an explicit link to the parent product.",
-          "params": [
-            {
-              "name": "productId",
-              "description": "Unique identifier for the product."
-            },
-            {
-              "name": "lowStockAlertId",
-              "description": "Unique identifier for the low stock alert."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to manage product inventory, stock updates, and low stock alerts for a UMKM (Micro, Small, and Medium Enterprises). It prioritizes authorization independence and clarity of intent for security and debuggability. User data is implicitly managed by Firebase Auth and doesn't require a dedicated user document.\n\n*   **Products Collection:** Stores product information. No explicit ownership since it's managed by the application.  The absence of a direct user relationship simplifies management. Read access can be controlled as needed, potentially allowing for public visibility or restricted to authenticated users.\n*   **StockUpdates Subcollection:** Each product has a subcollection to store stock update entries, ensuring chronological tracking of changes.  Includes `productId` to create an explicit link to the parent product, enforcing data consistency.  This structure supports efficient querying of stock history for a given product.\n*   **LowStockAlerts Subcollection:** Similar to stock updates, low stock alerts are stored in a subcollection for each product. This allows efficient retrieval of alerts and monitoring of low stock situations. Includes `productId` to create an explicit link to the parent product.\n\n**Authorization Independence:** This design avoids `get()` calls in security rules. Authorization is implicit based on the application's logic (no explicit user roles within the database).\n\n**QAPs (Rules are not Filters):** The data structure supports secure list operations. Listing of products, stock updates, and low stock alerts can be secured at the collection level.\n\n**Denormalization:** While explicit user ownership is not required by the user story, the `productId` field in the `StockUpdate` and `LowStockAlert` documents denormalizes the relationship between a product and its associated stock updates and alerts, enabling secure and efficient queries."
+    "/users/{userId}/stores/{storeId}": {
+      "schema": { "$ref": "#/backend/entities/Store" },
+      "description": "User stores."
+    },
+    "/stores/{storeId}/products/{productId}": {
+      "schema": { "$ref": "#/backend/entities/Product" },
+      "description": "Products within a specific store."
+    },
+    "/stores/{storeId}/products/{productId}/stockUpdates/{updateId}": {
+      "schema": { "$ref": "#/backend/entities/StockUpdate" },
+      "description": "Historical stock updates for a product."
+    }
   }
 }

@@ -1,148 +1,140 @@
 "use client";
 
-import { useInventory } from "@/lib/inventory-store";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Package, AlertTriangle, TrendingDown, DollarSign, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Package, TrendingUp, Zap, Shield, ArrowRight, Sparkles } from "lucide-react";
+import { useUser } from "@/firebase";
+import Image from "next/image";
 
-export default function Dashboard() {
-  const { products, isLoading } = useInventory();
-
-  if (isLoading) return <div className="p-8">Memuat data...</div>;
-
-  const lowStockCount = products.filter(p => p.currentStock <= p.minStock).length;
-  const totalItems = products.length;
-  const totalValue = products.reduce((acc, p) => acc + (p.currentStock * p.unitPrice), 0);
-  const outOfStockCount = products.filter(p => p.currentStock === 0).length;
+export default function LandingPage() {
+  const { user } = useUser();
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Ringkasan Inventaris</h1>
-          <p className="text-muted-foreground">Kelola stok produk UMKM Anda dengan mudah.</p>
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="flex items-center justify-between px-6 py-4 border-b">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+            <Package className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-foreground">InvenGo</span>
         </div>
-        <div className="flex gap-3">
-          <Button asChild variant="outline">
-            <Link href="/inventory">Lihat Semua</Link>
+        <div className="flex items-center gap-4">
+          {user ? (
+            <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">Masuk</Link>
+              </Button>
+              <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link href="/login?tab=register">Daftar Sekarang</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="px-6 py-16 md:py-24 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent-foreground text-sm font-medium mb-6">
+          <Sparkles className="h-4 w-4" />
+          <span>Baru: Analisis Inventaris Berbasis AI</span>
+        </div>
+        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground mb-6 max-w-4xl">
+          Kelola Inventaris UMKM Lebih <span className="text-accent">Cerdas</span> & Efisien
+        </h1>
+        <p className="text-lg text-muted-foreground mb-10 max-w-2xl">
+          InvenGo membantu pemilik warung dan toko kecil memantau stok secara real-time, 
+          mencegah kehabisan barang dengan prediksi AI, dan mengoptimalkan keuntungan.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-8">
+            <Link href="/login?tab=register">
+              Mulai Gratis <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </Button>
-          <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-            <Link href="/inventory?action=add">Tambah Produk</Link>
+          <Button size="lg" variant="outline" className="h-12 px-8">
+            Lihat Demo
           </Button>
         </div>
-      </header>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Produk</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalItems}</div>
-            <p className="text-xs text-muted-foreground mt-1">Jenis barang di gudang</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Stok Rendah</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{lowStockCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Perlu segera dipesan ulang</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Habis Stok</CardTitle>
-            <TrendingDown className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{outOfStockCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Produk tidak tersedia</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Nilai Inventaris</CardTitle>
-            <DollarSign className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              Rp {totalValue.toLocaleString('id-ID')}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Estimasi nilai aset</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="mt-16 relative w-full max-w-5xl aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl border bg-muted">
+          <Image 
+            src="https://picsum.photos/seed/inv-hero/1200/675" 
+            alt="Dashboard Preview" 
+            fill 
+            className="object-cover"
+            data-ai-hint="dashboard interface"
+          />
+        </div>
+      </section>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="md:col-span-2 border-none shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle>Stok Menipis</CardTitle>
-            <CardDescription>Produk yang hampir mencapai batas minimum stok.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {products.filter(p => p.currentStock <= p.minStock).length > 0 ? (
-                products.filter(p => p.currentStock <= p.minStock).map(product => (
-                  <div key={product.id} className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                      <Package className="h-5 w-5 text-primary-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Progress value={(product.currentStock / (product.minStock * 2)) * 100} className="h-1.5" />
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {product.currentStock} / {product.minStock} min
-                        </span>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm" asChild>
-                       <Link href={`/inventory?action=update&id=${product.id}`}>Pesan</Link>
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  Semua stok aman saat ini.
+      {/* Features */}
+      <section className="bg-muted/30 py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Kenapa Memilih InvenGo?</h2>
+            <p className="text-muted-foreground">Fitur lengkap yang dirancang khusus untuk kebutuhan pedagang.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Zap,
+                title: "Real-time Tracking",
+                desc: "Update stok barang Anda seketika setiap ada transaksi masuk atau keluar."
+              },
+              {
+                icon: TrendingUp,
+                title: "AI Forecasting",
+                desc: "Dapatkan prediksi kapan stok akan habis berdasarkan pola penjualan historis Anda."
+              },
+              {
+                icon: Shield,
+                title: "Multi-Store Ready",
+                desc: "Siap dikembangkan untuk mengelola banyak cabang atau warung dalam satu akun."
+              }
+            ].map((feature, i) => (
+              <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border hover:shadow-md transition-shadow">
+                <div className="h-12 w-12 rounded-xl bg-accent/20 flex items-center justify-center mb-6">
+                  <feature.icon className="h-6 w-6 text-accent-foreground" />
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <Card className="border-none shadow-sm bg-white">
-          <CardHeader>
-            <CardTitle>Aktivitas Cepat</CardTitle>
-            <CardDescription>Tindakan yang sering dilakukan.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            <Button variant="outline" className="justify-start gap-2 h-12" asChild>
-              <Link href="/inventory?action=add">
-                <PlusCircle className="h-4 w-4 text-accent" />
-                Input Produk Baru
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start gap-2 h-12" asChild>
-               <Link href="/inventory?type=low">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                Cek Stok Kritis
-              </Link>
-            </Button>
-            <Button variant="outline" className="justify-start gap-2 h-12" asChild>
-              <Link href="/analysis">
-                <TrendingDown className="h-4 w-4 text-primary-foreground" />
-                Prediksi AI
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* CTA Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-5xl mx-auto bg-primary rounded-3xl p-10 md:p-16 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-6">
+            Siap Majukan Bisnis Anda?
+          </h2>
+          <p className="text-primary-foreground/80 mb-10 text-lg max-w-xl mx-auto">
+            Bergabunglah dengan ribuan pemilik UMKM yang sudah mendigitalisasi inventaris mereka.
+          </p>
+          <Button size="lg" variant="secondary" asChild className="h-12 px-8 font-bold">
+            <Link href="/login?tab=register">Buat Akun Sekarang</Link>
+          </Button>
+        </div>
+      </section>
+
+      <footer className="border-t py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-2">
+            <Package className="h-6 w-6 text-accent" />
+            <span className="text-xl font-bold">InvenGo</span>
+          </div>
+          <div className="text-muted-foreground text-sm">
+            © {new Date().getFullYear()} InvenGo. Dibuat dengan ❤️ untuk UMKM Indonesia.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

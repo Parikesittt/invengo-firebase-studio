@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -6,13 +5,14 @@ import {
   LayoutDashboard,
   Package,
   TrendingUp,
-  AlertTriangle,
-  History,
   Settings,
-  PlusCircle,
+  LogOut,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth, useUser } from "@/firebase";
+import { signOut } from "firebase/auth";
 
 import {
   Sidebar,
@@ -29,8 +29,13 @@ import {
 
 const navItems = [
   {
-    title: "Dashboard",
+    title: "Beranda",
     url: "/",
+    icon: Home,
+  },
+  {
+    title: "Dashboard",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -47,6 +52,20 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const auth = useAuth();
+
+  const handleLogout = () => {
+    signOut(auth);
+  };
+
+  // Only show sidebar on app routes, not on landing or login
+  const isAuthPage = pathname === "/login";
+  const isLandingPage = pathname === "/";
+  
+  // Actually, standard SaaS pattern is to show it always or handle visibility
+  // For MVP, let's only show it if user is logged in and not on landing
+  if (!user && (isLandingPage || isAuthPage)) return null;
 
   return (
     <Sidebar variant="inset" collapsible="icon">
@@ -55,7 +74,7 @@ export function AppSidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Package className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-foreground">InventarisKu</span>
+          <span className="text-xl font-bold tracking-tight text-foreground">InvenGo</span>
         </div>
         <div className="hidden group-data-[collapsible=icon]:flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
            <Package className="h-5 w-5" />
@@ -85,7 +104,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden">
+      <SidebarFooter className="p-4 group-data-[collapsible=icon]:hidden space-y-4">
         <div className="rounded-xl bg-primary/10 p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Status Sistem</p>
           <div className="flex items-center gap-2">
@@ -93,6 +112,15 @@ export function AppSidebar() {
             <span className="text-sm font-semibold">Tersambung</span>
           </div>
         </div>
+        {user && (
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full px-2 py-1.5 text-sm font-medium text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Keluar</span>
+          </button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
