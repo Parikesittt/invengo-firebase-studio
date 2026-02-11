@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useInventory } from "@/lib/inventory-store";
@@ -9,11 +10,13 @@ import { Progress } from "@/components/ui/progress";
 import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTranslation } from "@/lib/i18n-context";
 
 export default function Dashboard() {
   const { products, isLoading } = useInventory();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -33,15 +36,12 @@ export default function Dashboard() {
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Ringkasan Inventaris</h1>
-          <p className="text-muted-foreground">Halo, {user.displayName || user.email}! Kelola stok produk UMKM Anda.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('dashboard.title')}</h1>
+          <p className="text-muted-foreground">{t('dashboard.welcome', { name: user.displayName || user.email || 'User' })}</p>
         </div>
         <div className="flex gap-3">
-          <Button asChild variant="outline">
-            <Link href="/inventory">Lihat Semua</Link>
-          </Button>
           <Button className="bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-            <Link href="/inventory?action=add">Tambah Produk</Link>
+            <Link href="/inventory?action=add">{t('inventory.add_btn')}</Link>
           </Button>
         </div>
       </header>
@@ -49,44 +49,44 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Produk</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.total_products')}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalItems}</div>
-            <p className="text-xs text-muted-foreground mt-1">Jenis barang di gudang</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.items_desc')}</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Stok Rendah</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.low_stock')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{lowStockCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Perlu segera dipesan ulang</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.low_stock_desc')}</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Habis Stok</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.out_of_stock')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{outOfStockCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Produk tidak tersedia</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.out_of_stock_desc')}</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-white hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Nilai Inventaris</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('dashboard.inventory_value')}</CardTitle>
             <DollarSign className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
               Rp {totalValue.toLocaleString('id-ID')}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Estimasi nilai aset</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dashboard.value_desc')}</p>
           </CardContent>
         </Card>
       </div>
@@ -94,8 +94,8 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="md:col-span-2 border-none shadow-sm bg-white">
           <CardHeader>
-            <CardTitle>Stok Menipis</CardTitle>
-            <CardDescription>Produk yang hampir mencapai batas minimum stok.</CardDescription>
+            <CardTitle>{t('dashboard.low_stock_list')}</CardTitle>
+            <CardDescription>{t('dashboard.low_stock_list_desc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -115,13 +115,13 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" asChild>
-                       <Link href={`/inventory?action=update&id=${product.id}`}>Pesan</Link>
+                       <Link href={`/inventory?action=update&id=${product.id}`}>{t('dashboard.order')}</Link>
                     </Button>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
-                  Semua stok aman saat ini.
+                  {t('dashboard.all_safe')}
                 </div>
               )}
             </div>
@@ -130,26 +130,26 @@ export default function Dashboard() {
 
         <Card className="border-none shadow-sm bg-white">
           <CardHeader>
-            <CardTitle>Aktivitas Cepat</CardTitle>
-            <CardDescription>Tindakan yang sering dilakukan.</CardDescription>
+            <CardTitle>{t('dashboard.quick_actions')}</CardTitle>
+            <CardDescription>{t('dashboard.quick_actions_desc')}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-2">
             <Button variant="outline" className="justify-start gap-2 h-12" asChild>
               <Link href="/inventory?action=add">
                 <PlusCircle className="h-4 w-4 text-accent" />
-                Input Produk Baru
+                {t('dashboard.add_product')}
               </Link>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-12" asChild>
                <Link href="/inventory?type=low">
                 <AlertTriangle className="h-4 w-4 text-destructive" />
-                Cek Stok Kritis
+                {t('dashboard.check_critical')}
               </Link>
             </Button>
             <Button variant="outline" className="justify-start gap-2 h-12" asChild>
               <Link href="/analysis">
                 <TrendingDown className="h-4 w-4 text-primary-foreground" />
-                Prediksi AI
+                {t('dashboard.ai_prediction')}
               </Link>
             </Button>
           </CardContent>
