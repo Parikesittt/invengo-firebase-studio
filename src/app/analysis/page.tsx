@@ -1,7 +1,5 @@
 
 "use client";
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
 import { useInventory } from "@/lib/inventory-store";
 import { analyzeInventoryTrends, AnalyzeInventoryTrendsOutput } from "@/ai/flows/analyze-inventory-trends";

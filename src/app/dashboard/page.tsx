@@ -1,6 +1,5 @@
 
 "use client";
-export const dynamic = "force-dynamic";
 import { useInventory } from "@/lib/inventory-store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Package, AlertTriangle, TrendingDown, DollarSign, PlusCircle } from "lucide-react";
